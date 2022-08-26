@@ -35,7 +35,7 @@ export const Selection = ({ handleOnChange }) => {
             type="radio"
             name="option"
             value="park"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 1)}
           />
         </div>
         <div
@@ -51,7 +51,7 @@ export const Selection = ({ handleOnChange }) => {
             type="radio"
             name="option"
             value="unpark"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 4)}
           />
         </div>
         <div
@@ -67,7 +67,7 @@ export const Selection = ({ handleOnChange }) => {
             type="radio"
             name="option"
             value="map"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 5)}
           />
         </div>
       </div>

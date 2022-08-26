@@ -1,6 +1,6 @@
 import React from "react";
 
-export const VehicleSizeInput = ({ handleOnChange, exit }) => {
+export const VehicleSizeInput = ({ handleOnChange, input }) => {
   return (
     <>
       <h1
@@ -35,7 +35,7 @@ export const VehicleSizeInput = ({ handleOnChange, exit }) => {
             type="radio"
             name="vehicleSize"
             value="0"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 2)}
           />
         </div>
         <div
@@ -51,7 +51,7 @@ export const VehicleSizeInput = ({ handleOnChange, exit }) => {
             type="radio"
             name="vehicleSize"
             value="1"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 2)}
           />
         </div>
         <div
@@ -67,7 +67,7 @@ export const VehicleSizeInput = ({ handleOnChange, exit }) => {
             type="radio"
             name="vehicleSize"
             value="2"
-            onClick={handleOnChange}
+            onClick={(event) => handleOnChange(event, 2)}
           />
         </div>
         <div
@@ -79,7 +79,13 @@ export const VehicleSizeInput = ({ handleOnChange, exit }) => {
           }}
         >
           <label>Exit</label>
-          <input onClick={exit} type="radio" id="age1" name="age" value="30" />
+          <input
+            onClick={(event) => handleOnChange(event, (input.steps -= 1))}
+            type="radio"
+            id="age1"
+            name="age"
+            value="30"
+          />
         </div>
       </div>
     </>

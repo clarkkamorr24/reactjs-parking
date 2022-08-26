@@ -7,6 +7,9 @@ const initialState = {
   option: "",
   vehicleSize: "",
   entryPoint: "",
+  unpark: "",
+  steps: 0,
+  message: "Successfully  park!",
 };
 
 export const VerifyContextProvider = ({ children }) => {
@@ -24,8 +27,12 @@ export const VerifyContextProvider = ({ children }) => {
     { name: "C", row: maxRows, col: 3 },
   ]);
 
-  const handleOnChange = (event) => {
-    setInput({ ...input, [event.target.name]: event.target.value });
+  const handleOnChange = (event, step) => {
+    setInput({
+      ...input,
+      [event.target.name]: event.target.value,
+      steps: step,
+    });
   };
 
   return (

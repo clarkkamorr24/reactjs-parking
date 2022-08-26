@@ -6,6 +6,7 @@ import {
   VehicleSizeInput,
   Unpark,
   Map,
+  ParkScreen,
 } from "./screens";
 
 export const SelectScreen = () => {
@@ -15,6 +16,7 @@ export const SelectScreen = () => {
     setInput,
     handleOnChange,
     maxColumns,
+    message,
     setMaxColumns,
     maxRows,
     setMaxRows,
@@ -23,9 +25,10 @@ export const SelectScreen = () => {
     entrance,
     setEntrance,
   } = VerifyData;
+
   useEffect(() => {
     initSpaces();
-    console.log("parkSlot", parkSlot);
+    // console.log("parkSlot", parkSlot);    // console.log("parkSlot", parkSlot);
   }, [parkSlot]);
 
   const initSpaces = () => {
@@ -55,7 +58,10 @@ export const SelectScreen = () => {
       desc: desc,
     };
   };
-
+  const text = () => {
+    alert("No Parking slots found!");
+    return false;
+  };
   const getVehicleDesc = (size) => {
     switch (parseInt(size)) {
       case 0:
@@ -73,7 +79,6 @@ export const SelectScreen = () => {
   };
 
   const park = (size, ent) => {
-    console.log("parkSlot", parkSlot);
     let entry = entrance.find((o) => o.name === ent.toUpperCase());
     let nrow = -1,
       ncol = -1;
@@ -99,9 +104,7 @@ export const SelectScreen = () => {
     }
 
     if (nrow == -1) {
-      // No parking slot found
-      alert("No parking slot found");
-      return false;
+      text();
     } else {
       Object.assign(parkSlot[nrow][ncol], {
         occupied: true,
@@ -113,8 +116,6 @@ export const SelectScreen = () => {
         col: ncol,
         start: new Date(),
       });
-      alert("Successfully Park!");
-      setInput({ option: "", vehicleSize: "", entryPoint: "" });
       return parkSlot[nrow][ncol];
     }
   };
@@ -127,40 +128,108 @@ export const SelectScreen = () => {
     }
   };
 
-  const exit = () => {
-    alert("Have a nice day!");
-    setInput({ option: "", vehicleSize: "", entryPoint: "" });
+  const remove = (row, col) => {
+    let p = parkSlot[row][col];
+    let diff = new Date() - p.start;
+
+    let totalPayable = compute(p.psize.value, diff);
+
+    console.log(`Total charges: P ${totalPayable}`);
+    // Reset parking slot
+    Object.assign(parkSlot[row][col], {
+      occupied: false,
+      vsize: null,
+      start: null,
+    });
+    alert(`Vehicle Unparked!\nTotal charges: P ${totalPayable}`);
+  };
+
+  const confirmButton = async (option) => {
+    if (option === "park") {
+      park(input.vehicleSize, input.entryPoint);
+      setInput({ ...input, steps: 0 });
+    } else if (option === "unpark") {
+      let strLoc = input?.unpark?.trim().split(" ");
+      if (strLoc.length >= 2) {
+        let row = strLoc[0];
+        let col = strLoc[1];
+        await remove(row, col);
+        setInput({ ...input, steps: 0 });
+        console.log("Vehicle unparked!");
+      }
+    } else {
+    }
+  };
+
+  const compute = (size, totalTime) => {
+    let remainingTime = totalTime;
+    let t24 = 1000 * 60 * 24;
+    let t1h = 1000 * 60;
+    let charges = 0;
+
+    var hourlyCharge = 0;
+
+    if (size == 0) {
+      hourlyCharge = 20;
+    } else if (size == 1) {
+      hourlyCharge = 60;
+    } else if (size == 2) {
+      hourlyCharge = 100;
+    }
+
+    // For parking that exceeds 24 hours, every full 24 hour chunk is charged 5,000 pesos regardless of parking slot.
+    if (remainingTime > t24) {
+      let n24 = parseInt(totalTime / t24);
+      charges += n24 * 5000;
+      remainingTime -= n24 * t24;
+    }
+
+    // First 3 hours has a flat rate of 40
+    if (remainingTime > t1h * 3) {
+      remainingTime -= t1h * 3;
+      charges += 40;
+    }
+
+    // The exceeding hourly rate beyond the initial three (3) hours will be charged as follows:
+    // - 20/hour for vehicles parked in SP;
+    // - 60/hour for vehicles parked in MP; and
+    // - 100/hour for vehicles parked in LP
+    if (remainingTime > 0) {
+      let remainingHours = Math.ceil(remainingTime / t1h);
+      charges += remainingHours * hourlyCharge;
+    }
+
+    // return total charges
+    return charges;
   };
 
   return (
-    <div>
-      {input.option === "" ? (
+    <div style={{ textAlign: "center" }}>
+      {input.steps === 0 ? (
         <Selection
           input={input}
           setInput={setInput}
           handleOnChange={handleOnChange}
         />
-      ) : input.option === "park" && !input.vehicleSize ? (
-        <VehicleSizeInput exit={exit} handleOnChange={handleOnChange} />
-      ) : input.vehicleSize ? (
+      ) : input.steps === 1 ? (
+        <VehicleSizeInput input={input} handleOnChange={handleOnChange} />
+      ) : input.steps === 2 ? (
         <EntranceInput
-          exit={exit}
           entrance={entrance}
+          setInput={setInput}
           input={input}
           handleOnChange={handleOnChange}
           confirmButton={() => park(input.vehicleSize, input.entryPoint)}
         />
-      ) : input.option === "unpark" ? (
-        <Unpark handleOnChange={handleOnChange} />
-      ) : input.option === "map" ? (
+      ) : input.steps === 3 ? (
+        <ParkScreen confirmButton={confirmButton} input={input} />
+      ) : input.steps === 4 ? (
+        <Unpark confirmButton={confirmButton} handleOnChange={handleOnChange} />
+      ) : input.steps === 5 ? (
         <Map handleOnChange={handleOnChange} parkSlot={parkSlot} />
       ) : (
         <></>
       )}
-      {/* <button onClick={confirmButton}>Enter</button> */}
-      {/* <input onChange={handleOnChange}></input>
-      
-      <p>{input}</p> */}
     </div>
   );
 };
